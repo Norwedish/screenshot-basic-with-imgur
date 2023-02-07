@@ -195,15 +195,23 @@ class ScreenshotUI {
             return formData;
         };
 
+        let body = (request.targetField) ? getFormData() : JSON.stringify({
+            data: imageURL,
+            id: request.correlation
+        });
+
+
+        if (request.targetField === 'imgur') {
+            body = imageURL.replace(/^data:image\/[a-z]+;base64,/, '');
+        }
+
         // upload the image somewhere
         fetch(request.targetURL, {
             method: 'POST',
             mode: 'cors',
+            cache: 'no-store',
             headers: request.headers,
-            body: (request.targetField) ? getFormData() : JSON.stringify({
-                data: imageURL,
-                id: request.correlation
-            })
+            body: body
         })
         .then(response => response.text())
         .then(text => {
@@ -211,6 +219,7 @@ class ScreenshotUI {
                 fetch(request.resultURL, {
                     method: 'POST',
                     mode: 'cors',
+                    cache: 'no-store',
                     body: JSON.stringify({
                         data: text,
                         id: request.correlation
